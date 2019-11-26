@@ -5,40 +5,30 @@
 module Elasticsearch
   module API
     module Actions
+      # Creates or updates a script.
 
-      # Store a script in an internal index (`.scripts`), to be able to reference them
-      # in search definitions (with dynamic scripting disabled)
       #
-      # @example Storing an Mvel script in Elasticsearch and using it in function score
-      #
-      #     client.put_script id: 'my_score', body: { script: { lang: 'groovy', source: 'log(_score * factor)' } }
-      #
-      #     client.search body: {
-      #       query: {
-      #         function_score: {
-      #           query: { match: { title: 'foo' } },
-      #           functions: [ { script_score: { script_id: 'my_score', params: { factor: 3 } } } ]
-      #         }
-      #       }
-      #     }
-      #
-      # @option arguments [String] :id Script ID (*Required*)
-      # @option arguments [String] :context Script context
+      # @option arguments [String] :id Script ID
       # @option arguments [Hash] :body The document (*Required*)
-      # @option arguments [Time] :timeout Explicit operation timeout
-      # @option arguments [Time] :master_timeout Specify timeout for connection to master
-      # @option arguments [String] :context Context name to compile script against
+
       #
-      # @see https://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html#_indexed_scripts
+      # @see https://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html
       #
-      def put_script(arguments={})
-        raise ArgumentError, "Required argument 'id' missing"   unless arguments[:id]
+      def put_script(arguments = {})
         raise ArgumentError, "Required argument 'body' missing" unless arguments[:body]
+        raise ArgumentError, "Required argument 'id' missing" unless arguments[:id]
+
+        arguments = arguments.clone
+
+        _id = arguments.delete(:id)
+
         method = HTTP_PUT
-        path   = "_scripts/#{arguments.has_key?(:lang) ? "#{arguments.delete(:lang)}/" : ''}#{arguments[:id]}"
-
+        path   = if _id && _context
+                   "_scripts/#{Utils.__listify(_id)}/#{Utils.__listify(_context)}"
+                 else
+                   "_scripts/#{Utils.__listify(_id)}"
+end
         params = Utils.__validate_and_extract_params arguments, ParamsRegistry.get(__method__)
-
         body   = arguments[:body]
 
         perform_request(method, path, params, body).body
@@ -46,11 +36,12 @@ module Elasticsearch
 
       # Register this action with its valid params when the module is loaded.
       #
-      # @since 6.1.1
+      # @since 6.2.0
       ParamsRegistry.register(:put_script, [
-          :timeout,
-          :master_timeout,
-          :context ].freeze)
+        :timeout,
+        :master_timeout,
+        :context
+      ].freeze)
     end
   end
 end

@@ -6,14 +6,14 @@ module Elasticsearch
   module API
     module Cat
       module Actions
+        # Returns help for the Cat APIs.
 
-        # Help information for the Cat API
-        #
-        # @option arguments [Boolean] :help Return help information
         #
         # @see https://www.elastic.co/guide/en/elasticsearch/reference/master/cat.html
         #
-        def help(arguments={})
+        def help(arguments = {})
+          arguments = arguments.clone
+
           method = HTTP_GET
           path   = "_cat"
           params = Utils.__validate_and_extract_params arguments, ParamsRegistry.get(__method__)
@@ -24,11 +24,12 @@ module Elasticsearch
 
         # Register this action with its valid params when the module is loaded.
         #
-        # @since 6.1.1
+        # @since 6.2.0
         ParamsRegistry.register(:help, [
-            :help,
-            :s ].freeze)
-      end
-    end
+          :help,
+          :s
+        ].freeze)
   end
+      end
+end
 end

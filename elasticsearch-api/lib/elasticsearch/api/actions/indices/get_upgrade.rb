@@ -6,26 +6,24 @@ module Elasticsearch
   module API
     module Indices
       module Actions
-        # Returns mapping for one or more fields.
+        # The _upgrade API is no longer useful and will be removed.
 
         #
-        # @option arguments [List] :fields A comma-separated list of fields
+        # @option arguments [List] :index A comma-separated list of index names; use `_all` or empty string to perform the operation on all indices
 
         #
-        # @see https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-get-field-mapping.html
+        # @see https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-upgrade.html
         #
-        def get_field_mapping(arguments = {})
-          raise ArgumentError, "Required argument 'fields' missing" unless arguments[:fields]
-
+        def get_upgrade(arguments = {})
           arguments = arguments.clone
 
-          _fields = arguments.delete(:fields)
+          _index = arguments.delete(:index)
 
           method = HTTP_GET
-          path   = if _index && _fields
-                     "#{Utils.__listify(_index)}/_mapping/field/#{Utils.__listify(_fields)}"
+          path   = if _index
+                     "#{Utils.__listify(_index)}/_upgrade"
                    else
-                     "_mapping/field/#{Utils.__listify(_fields)}"
+                     "_upgrade"
   end
           params = Utils.__validate_and_extract_params arguments, ParamsRegistry.get(__method__)
           body   = nil
@@ -36,13 +34,10 @@ module Elasticsearch
         # Register this action with its valid params when the module is loaded.
         #
         # @since 6.2.0
-        ParamsRegistry.register(:get_field_mapping, [
-          :include_type_name,
-          :include_defaults,
+        ParamsRegistry.register(:get_upgrade, [
           :ignore_unavailable,
           :allow_no_indices,
-          :expand_wildcards,
-          :local
+          :expand_wildcards
         ].freeze)
   end
       end

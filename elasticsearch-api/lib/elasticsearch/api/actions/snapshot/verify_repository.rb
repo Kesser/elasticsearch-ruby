@@ -6,20 +6,23 @@ module Elasticsearch
   module API
     module Snapshot
       module Actions
+        # Verifies a repository.
 
-        # Explicitly perform the verification of a repository
         #
-        # @option arguments [String] :repository A repository name (*Required*)
-        # @option arguments [Time] :master_timeout Explicit operation timeout for connection to master node
-        # @option arguments [Time] :timeout Explicit operation timeout
+        # @option arguments [String] :repository A repository name
+
         #
         # @see https://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html
         #
-        def verify_repository(arguments={})
+        def verify_repository(arguments = {})
           raise ArgumentError, "Required argument 'repository' missing" unless arguments[:repository]
-          repository = arguments.delete(:repository)
+
+          arguments = arguments.clone
+
+          _repository = arguments.delete(:repository)
+
           method = HTTP_POST
-          path   = Utils.__pathify( '_snapshot', Utils.__escape(repository), '_verify' )
+          path   = "_snapshot/#{Utils.__listify(_repository)}/_verify"
           params = Utils.__validate_and_extract_params arguments, ParamsRegistry.get(__method__)
           body   = nil
 
@@ -28,11 +31,12 @@ module Elasticsearch
 
         # Register this action with its valid params when the module is loaded.
         #
-        # @since 6.1.1
+        # @since 6.2.0
         ParamsRegistry.register(:verify_repository, [
-            :master_timeout,
-            :timeout ].freeze)
-      end
-    end
+          :master_timeout,
+          :timeout
+        ].freeze)
   end
+      end
+end
 end
